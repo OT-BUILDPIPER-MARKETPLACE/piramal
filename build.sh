@@ -40,6 +40,33 @@ increment_version() {
     echo "${parts[*]}" | tr ' ' '.'
 }
 
+# Function to update the tag value in the JSON configuration
+update_tag_value() {
+    local json_file="/bp/data/environment_build"
+    local new_tag="$1"
+
+    if [ -z "$new_tag" ]; then
+        logErrorMessage "Error: New tag value is required."
+        return 1
+    fi
+
+    # Check if jq is installed
+    if ! command -v jq >/dev/null 2>&1; then
+        logErrorMessage "jq is required but it's not installed."
+        return 1
+    fi
+
+    # Update the tag value using jq
+    jq --arg tag "$new_tag" '.build_detail.repository.tag = $tag' "$json_file" > tmp.$$.json && mv tmp.$$.json "$json_file"
+
+    if [ $? -eq 0 ]; then
+        logInfoMessage "Tag updated to $new_tag successfully."
+    else
+        logErrorMessage "Failed to update tag."
+        return 1
+    fi
+}
+
 # Main script
 main() {
     current_version=$(get_version_from_pom)
@@ -51,15 +78,20 @@ main() {
         git add pom.xml
         git commit -m "Update version to $new_version"
         git tag "$new_version"
-        echo "Version updated to $new_version and tagged locally."
+        logInfoMessage "Version updated to $new_version and tagged locally."
+
+        # Update the tag in JSON configuration
+        update_tag_value "$new_version"
     else
         git tag "$current_version"
-        echo "Tag $current_version created locally."
+        logInfoMessage "Tag $current_version created locally."
     fi
 }
 
 # Execute the main function
 main "$@"
+
+cat /bp/data/environment_build | jq
 
 # Additional processing and condition check
 if [condition]; then
