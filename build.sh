@@ -5,7 +5,7 @@ source /opt/buildpiper/shell-functions/functions.sh
 source /opt/buildpiper/shell-functions/log-functions.sh
 
 # Define codebase location based on environment variables
-CODEBASE_LOCATION="${WORKSPACE}/${CODEBASE_DIR}"
+export CODEBASE_LOCATION="${WORKSPACE}/${CODEBASE_DIR}"
 logInfoMessage "I'll do processing at [$CODEBASE_LOCATION]"
 
 # Wait for a specified duration
@@ -42,22 +42,26 @@ increment_version() {
 
 # Function to update the tag value in the JSON configuration
 update_tag_value() {
-    local json_file="/bp/data/environment_build"
-    local new_tag="$1"
+    export json_file="/bp/data/environment_build"
+    export new_tag="$1"
 
     if [ -z "$new_tag" ]; then
         logErrorMessage "Error: New tag value is required."
         return 1
     fi
 
-    # Check if jq is installed
+    # Check if jq and sponge are installed
     if ! command -v jq >/dev/null 2>&1; then
         logErrorMessage "jq is required but it's not installed."
         return 1
     fi
+    if ! command -v sponge >/dev/null 2>&1; then
+        logErrorMessage "sponge is required but it's not installed."
+        return 1
+    fi
 
-    # Update the tag value using jq
-    jq --arg tag "$new_tag" '.build_detail.repository.tag = $tag' "$json_file" > tmp.$$.json && mv tmp.$$.json "$json_file"
+    # Use jq to update the tag value directly in the file
+    jq --arg tag "$new_tag" '.build_detail.repository.tag = $tag' "$json_file" | sponge "$json_file"
 
     if [ $? -eq 0 ]; then
         logInfoMessage "Tag updated to $new_tag successfully."
@@ -69,10 +73,10 @@ update_tag_value() {
 
 # Main script
 main() {
-    current_version=$(get_version_from_pom)
+    export current_version=$(get_version_from_pom)
 
     if tag_exists "$current_version"; then
-        new_version=$(increment_version "$current_version")
+        export new_version=$(increment_version "$current_version")
         mvn versions:set -DnewVersion="$new_version" > /dev/null 2>&1
         mvn versions:commit > /dev/null 2>&1
         git add pom.xml
@@ -85,21 +89,39 @@ main() {
     else
         git tag "$current_version"
         logInfoMessage "Tag $current_version created locally."
+
+        # Update the tag in JSON configuration
+        update_tag_value "$current_version"
     fi
 }
 
 # Execute the main function
 main "$@"
 
-cat /bp/data/environment_build | jq
+# Show the value for each environment variable used in the script
+logInfoMessage "Printing environment variables used in the script:"
+logInfoMessage "WORKSPACE: ${WORKSPACE:-unset}"
+logInfoMessage "CODEBASE_DIR: ${CODEBASE_DIR:-unset}"
+logInfoMessage "SLEEP_DURATION: ${SLEEP_DURATION:-unset}"
+logInfoMessage "TASK_STATUS: ${TASK_STATUS:-unset}"
+logInfoMessage "ACTIVITY_SUB_TASK_CODE: ${ACTIVITY_SUB_TASK_CODE:-unset}"
+logInfoMessage "current_version: ${current_version:-unset}"
+logInfoMessage "new_version: ${new_version:-unset}"
+logInfoMessage "new_tag: ${new_tag:-unset}"
+logInfoMessage "json_file: ${json_file:-unset}"
+logInfoMessage "last_index: ${last_index:-unset}"
+logInfoMessage "parts: ${parts[*]:-unset}"
 
 # Additional processing and condition check
 if [condition]; then
     logErrorMessage "Done the required operation"
 else
-    TASK_STATUS=1
+    export TASK_STATUS=1
     logErrorMessage "Target server not provided please check"
 fi
 
 # Save the task status
 saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
+
+# Print the updated JSON file
+cat /bp/data/environment_build | jq
