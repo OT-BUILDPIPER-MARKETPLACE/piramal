@@ -1,8 +1,7 @@
 FROM alpine
 
 # Install necessary packages
-RUN apk add --no-cache --upgrade bash
-RUN apk add jq libxml2-utils maven git
+RUN apk add --no-cache --upgrade bash jq libxml2-utils maven git moreutils
 
 # Copy the build script and add additional shell functions
 COPY build.sh .
