@@ -99,29 +99,29 @@ main() {
 main "$@"
 
 # Show the value for each environment variable used in the script
-logInfoMessage "Printing environment variables used in the script:"
-logInfoMessage "WORKSPACE: ${WORKSPACE:-unset}"
-logInfoMessage "CODEBASE_DIR: ${CODEBASE_DIR:-unset}"
-logInfoMessage "SLEEP_DURATION: ${SLEEP_DURATION:-unset}"
-logInfoMessage "TASK_STATUS: ${TASK_STATUS:-unset}"
-logInfoMessage "ACTIVITY_SUB_TASK_CODE: ${ACTIVITY_SUB_TASK_CODE:-unset}"
-logInfoMessage "current_version: ${current_version:-unset}"
-logInfoMessage "new_version: ${new_version:-unset}"
-logInfoMessage "new_tag: ${new_tag:-unset}"
-logInfoMessage "json_file: ${json_file:-unset}"
-logInfoMessage "last_index: ${last_index:-unset}"
-logInfoMessage "parts: ${parts[*]:-unset}"
+# logInfoMessage "Printing environment variables used in the script:"
+# logInfoMessage "WORKSPACE: ${WORKSPACE:-unset}"
+# logInfoMessage "CODEBASE_DIR: ${CODEBASE_DIR:-unset}"
+# logInfoMessage "SLEEP_DURATION: ${SLEEP_DURATION:-unset}"
+# logInfoMessage "TASK_STATUS: ${TASK_STATUS:-unset}"
+# logInfoMessage "ACTIVITY_SUB_TASK_CODE: ${ACTIVITY_SUB_TASK_CODE:-unset}"
+# logInfoMessage "current_version: ${current_version:-unset}"
+# logInfoMessage "new_version: ${new_version:-unset}"
+# logInfoMessage "new_tag: ${new_tag:-unset}"
+# logInfoMessage "json_file: ${json_file:-unset}"
+# logInfoMessage "last_index: ${last_index:-unset}"
+# logInfoMessage "parts: ${parts[*]:-unset}"
 
 # Additional processing and condition check
-if [condition]; then
-    logErrorMessage "Done the required operation"
-else
-    export TASK_STATUS=1
-    logErrorMessage "Target server not provided please check"
-fi
+# if [condition]; then
+#     logErrorMessage "Done the required operation"
+# else
+#     export TASK_STATUS=1
+#     logErrorMessage "Target server not provided please check"
+# fi
 
 # Save the task status
 saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
 
 # Print the updated JSON file
-cat /bp/data/environment_build | jq
+# cat /bp/data/environment_build | jq
