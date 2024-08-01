@@ -4,9 +4,20 @@
 source /opt/buildpiper/shell-functions/functions.sh
 source /opt/buildpiper/shell-functions/log-functions.sh
 
+TASK_STATUS=0
+
 # Define codebase location based on environment variables
+export WORKSPACE=/bp/workspace
 export CODEBASE_LOCATION="${WORKSPACE}/${CODEBASE_DIR}"
-logInfoMessage "I'll do processing at [$CODEBASE_LOCATION]"
+
+# Verify CODEBASE_LOCATION
+if [ -d "$CODEBASE_LOCATION" ]; then
+    logInfoMessage "I'll do processing at $CODEBASE_LOCATION"
+else
+    TASK_STATUS=1
+    logErrorMessage "CODEBASE_LOCATION not defined or does not exist"
+    exit 1
+fi
 
 # Wait for a specified duration
 sleep $SLEEP_DURATION
@@ -50,19 +61,16 @@ update_tag_value() {
         return 1
     fi
 
-    # Check if jq and sponge are installed
+    # Check if jq is installed
     if ! command -v jq >/dev/null 2>&1; then
         logErrorMessage "jq is required but it's not installed."
-        return 1
-    fi
-    if ! command -v sponge >/dev/null 2>&1; then
-        logErrorMessage "sponge is required but it's not installed."
         return 1
     fi
 
     # Use jq to update the tag value directly in the file
     jq --arg tag "$new_tag" '.build_detail.repository.tag = $tag' "$json_file" | sponge "$json_file"
 
+    # Log mechanism for renaming the file
     if [ $? -eq 0 ]; then
         logInfoMessage "Tag updated to $new_tag successfully."
     else
@@ -75,53 +83,67 @@ update_tag_value() {
 main() {
     export current_version=$(get_version_from_pom)
 
+    if [ -z "$current_version" ]; then
+        TASK_STATUS=1
+        logErrorMessage "Failed to get current version from pom.xml"
+        exit 1
+    else
+        logInfoMessage "Current version is $current_version"
+    fi
+
     if tag_exists "$current_version"; then
         export new_version=$(increment_version "$current_version")
+
+        if [ $? -eq 0 ]; then
+            logInfoMessage "New version is $new_version"
+        else
+            TASK_STATUS=1
+            logErrorMessage "Failed to increment version"
+            exit 1
+        fi
+
         mvn versions:set -DnewVersion="$new_version" > /dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            logInfoMessage "Maven version set to $new_version"
+        else
+            TASK_STATUS=1
+            logErrorMessage "Failed to set new version with Maven"
+            exit 1
+        fi
+
         mvn versions:commit > /dev/null 2>&1
-        git add pom.xml
-        git commit -m "Update version to $new_version"
-        git tag "$new_version"
-        logInfoMessage "Version updated to $new_version and tagged locally."
+        if [ $? -eq 0 ]; then
+            logInfoMessage "Maven versions committed"
+        else
+            TASK_STATUS=1
+            logErrorMessage "Failed to commit new version with Maven"
+            exit 1
+        fi
 
         # Update the tag in JSON configuration
         update_tag_value "$new_version"
+        if [ $? -eq 0 ]; then
+            logInfoMessage "Updated tag in JSON configuration to $new_version"
+        else
+            TASK_STATUS=1
+            logErrorMessage "Failed to update tag in JSON configuration"
+            exit 1
+        fi
     else
-        git tag "$current_version"
-        logInfoMessage "Tag $current_version created locally."
-
         # Update the tag in JSON configuration
         update_tag_value "$current_version"
+        if [ $? -eq 0 ]; then
+            logInfoMessage "Updated tag in JSON configuration to $current_version"
+        else
+            TASK_STATUS=1
+            logErrorMessage "Failed to update tag in JSON configuration"
+            exit 1
+        fi
     fi
 }
 
 # Execute the main function
 main "$@"
 
-# Show the value for each environment variable used in the script
-# logInfoMessage "Printing environment variables used in the script:"
-# logInfoMessage "WORKSPACE: ${WORKSPACE:-unset}"
-# logInfoMessage "CODEBASE_DIR: ${CODEBASE_DIR:-unset}"
-# logInfoMessage "SLEEP_DURATION: ${SLEEP_DURATION:-unset}"
-# logInfoMessage "TASK_STATUS: ${TASK_STATUS:-unset}"
-# logInfoMessage "ACTIVITY_SUB_TASK_CODE: ${ACTIVITY_SUB_TASK_CODE:-unset}"
-# logInfoMessage "current_version: ${current_version:-unset}"
-# logInfoMessage "new_version: ${new_version:-unset}"
-# logInfoMessage "new_tag: ${new_tag:-unset}"
-# logInfoMessage "json_file: ${json_file:-unset}"
-# logInfoMessage "last_index: ${last_index:-unset}"
-# logInfoMessage "parts: ${parts[*]:-unset}"
-
-# Additional processing and condition check
-# if [condition]; then
-#     logErrorMessage "Done the required operation"
-# else
-#     export TASK_STATUS=1
-#     logErrorMessage "Target server not provided please check"
-# fi
-
 # Save the task status
 saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
-
-# Print the updated JSON file
-# cat /bp/data/environment_build | jq
