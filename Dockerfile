@@ -10,7 +10,7 @@ ADD BP-BASE-SHELL-STEPS /opt/buildpiper/shell-functions/
 # Set environment variables
 ENV SLEEP_DURATION 5s
 ENV ACTIVITY_SUB_TASK_CODE BP-TAG-VALIDATOR-UPDATER
-ENV VALIDATION_FAILURE_ACTION WARNING
+ENV VALIDATION_FAILURE_ACTION ""
 
 # Make build.sh executable
 RUN chmod +x build.sh
