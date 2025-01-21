@@ -16,6 +16,7 @@ cd "$codebase_location" || {
     exit 1
   }
 
+curl -u $username:$password -O -L https://github.piramalfinance.com/raw/devops/build-scripts/main/jenkins/applist.txt
 #curl -u $username:$password -O -L https://github.piramalfinance.com/raw/devops/build-scripts/main/jenkins/build-init.sh
 # source build-init.sh  
   

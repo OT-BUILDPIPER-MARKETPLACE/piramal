@@ -26,6 +26,7 @@ function java_security_Check() {
   # Retrieve Java version from pom.xml
   local java_version=$(grep "<java.version>" pom.xml | grep -Eo '[0-9]{1,4}')
   
+  curl -u $username:$password -O -L https://github.piramalfinance.com/raw/devops/build-scripts/main/jenkins/applist.txt
   #curl -u $username:$password -O -L https://github.piramalfinance.com/raw/devops/build-scripts/main/jenkins/build-init.sh
   # source build-init.sh
 
@@ -62,12 +63,12 @@ function java_security_Check() {
             exit 1
             rm output.txt
       fi
- #   if [[ $medium_status && ! $(grep -q "$APP_NAME" "applist.txt") ]]; then
- #     echo "Error: Medium vulnerabilities found and application not exempt."
- #     cat "$output_file"
- #     rm -f "$output_file"
- #     exit 1
- #   fi
+      if [[ $medium_status && ! $(grep -q "$APP_NAME" "applist.txt") ]]; then
+            echo "Error: Medium vulnerabilities found and application not exempt."
+            cat "$output_file"
+            rm -f "$output_file"
+            exit 1
+      fi
 
     rm -f "$output_file"
     echo "CloudDefense scan passed. Proceeding with build."

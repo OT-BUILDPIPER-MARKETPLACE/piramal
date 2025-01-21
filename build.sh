@@ -6,6 +6,7 @@ source /opt/buildpiper/shell-functions/log-functions.sh
 source /opt/buildpiper/shell-functions/cdefense.sh
 source /opt/buildpiper/shell-functions/java-checks.sh
 source /opt/buildpiper/shell-functions/node-checks.sh
+source /opt/buildpiper/shell-functions/python-checks.sh
 
 # Default CloudDefense installation URL (can be overridden via environment variable)
 CDEFENSE_INSTALL_URL=${CDEFENSE_INSTALL_URL:-"https://raw.githubusercontent.com/CloudDefenseAI/cd/master/latest/cd-latest-linux-x64.tar.gz"}
@@ -77,7 +78,7 @@ case $LANGUAGE in
     ;;
     
   python)
-    # Commands to execute if pattern2 matches
+    python_security_Check "$CODEBASE_LOCATION" "$branch" "$SCAN_URL" "$cdefenseURL" "$CDEFENSE_API_KEY" "$APP_NAME" "$username" "$password"
     ;;  
   *)
      echo "please provide valid value to LANGUAGE variable .valid values are java,python and node"
