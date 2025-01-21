@@ -21,22 +21,16 @@ cd "${CODEBASE_LOCATION:-/bp/workspace}" || {
   exit 1
 }
 
-# Extract the username
-username=$(grep 'url' .git/config | grep -oP '(?<=://)[^:]*')
-
-# Extract the password/token
-password=$(grep 'url' .git/config | sed -n 's/.*:\/\/[^:]*:\([^@]*\)@.*/\1/p')
-
 
 # Extract repository URL from git configuration
-cdefenseURL=$(grep -oP '(?<=url = ).*' .git/config)
+cdefenseURL=$(grep -oP '(?<=url = ).*' .git/config | sed -E 's#(https?://)[^:@]+(:[^@]*)?@#\1#')
 if [ -z "$cdefenseURL" ]; then
   logErrorMessage "Failed to extract repository URL from .git/config"
   exit 1
 fi
 
 # Derive the application name from the repository URL
-APP_NAME=$(basename "$cdefenseURL" .git)
+APP_NAME=$CODEBASE_DIR
 
 if [ -z "$APP_NAME" ]; then
   logErrorMessage "Failed to derive application name from repository URL"
@@ -44,7 +38,7 @@ if [ -z "$APP_NAME" ]; then
 fi
 
 
-GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+GIT_BRANCH=$getGitBranch
 
 echo "Application Name: $APP_NAME"
 
@@ -69,13 +63,13 @@ fi
 sed -i "s/$service_name/$service_name-$new_version/g" next.config.js
         cat next.config.js
 
-        echo "//r.privjs.com/:_authToken=$authToken
+        echo "//r.privjs.com/:_authToken=$NPM_AUTH_TOKEN
     @module-federation:registry=https://r.privjs.com/"> .npmrc
 
     if grep -q "gitlab" "yarn.lock"; then
     echo "@services:registry=https://gitlab.piramalfinance.com/api/v4/packages/npm/
-         //gitlab.piramalfinance.com/api/v4/packages/npm/:_authToken=$authToken
-         //gitlab.piramalfinance.com/api/v4/projects/564/packages/npm/:_authToken=$authToken
+         //gitlab.piramalfinance.com/api/v4/packages/npm/:_authToken=$NPM_AUTH_TOKEN
+         //gitlab.piramalfinance.com/api/v4/projects/564/packages/npm/:_authToken=$NPM_AUTH_TOKEN
          " >> .npmrc
     else
     echo "@services:registry=https://github.piramalfinance.com/_registry/npm/
