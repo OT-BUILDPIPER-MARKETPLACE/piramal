@@ -29,13 +29,13 @@ if [ -z "$cdefenseURL" ]; then
 fi
 
 # Extract the username
-username=$(grep 'url' .git/config | grep -oP '(?<=://)[^:]*')
+#username=$(grep 'url' .git/config | grep -oP '(?<=://)[^:]*')
 
 # Extract the password/token
-password=$(grep 'url' .git/config | sed -n 's/.*:\/\/[^:]*:\([^@]*\)@.*/\1/p')
+#password=$(grep 'url' .git/config | sed -n 's/.*:\/\/[^:]*:\([^@]*\)@.*/\1/p')
 
 # Derive the application name from the repository URL
-APP_NAME=$(basename "$cdefenseURL" .git)
+APP_NAME=$CODEBASE_DIR
 
 if [ -z "$APP_NAME" ]; then
   logErrorMessage "Failed to derive application name from repository URL"
@@ -45,7 +45,7 @@ fi
 # Retrieve Java version from pom.xml
 # javaVersion=$(grep "<java.version>" pom.xml | grep -Eo '[0-9]{1,4}')
 
-branch=$(git rev-parse --abbrev-ref HEAD)
+branch=$getGitBranch
 
 echo "Application Name: $APP_NAME"
 echo "Repository URL: $cdefenseURL"
