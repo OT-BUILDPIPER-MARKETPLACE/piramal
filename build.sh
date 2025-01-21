@@ -65,7 +65,6 @@ function createEntrypointDockerFileNode()
 
 CODEBASE_LOCATION="${WORKSPACE}"/"${CODEBASE_DIR}"
 logInfoMessage "I'll do processing at [$CODEBASE_LOCATION]"
-sleep  $SLEEP_DURATION
 cd  "${CODEBASE_LOCATION}"
 
 case $LANGUAGE in
