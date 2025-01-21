@@ -12,7 +12,7 @@ function createEntrypointDockerFileJava()
     echo -e " Mongo encryption Enabled"
     echo "#!/bin/bash
           /usr/bin/mongocryptd &
-          java  -javaagent:/app/opentelemetry-1.0.1.jar -Dotel.resource.attributes=service.name=${APP_NAME} \${JAVA_OPTS} -Dotel.propagators=b3multi -Dotel.traces.exporter=zipkin  -Dotel.exporter.zipkin.endpoint=http://otel-collector.devopsnow.svc.cluster.local:9411  -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -jar /app/service.jar " > entrypoint.sh
+          java  -javaagent:/app/opentelemetry-1.0.1.jar -Dotel.resource.attributes=service.name=${CODEBASE_DIR} \${JAVA_OPTS} -Dotel.propagators=b3multi -Dotel.traces.exporter=zipkin  -Dotel.exporter.zipkin.endpoint=http://otel-collector.devopsnow.svc.cluster.local:9411  -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -jar /app/service.jar " > entrypoint.sh
    
     echo "FROM nexus.piramalfinance.com:8082/repository/piramal-docker/java-mongocryptd:java17
       WORKDIR /app
@@ -25,8 +25,8 @@ function createEntrypointDockerFileJava()
 
   else
     echo "#!/bin/bash
-          java  -javaagent:/app/opentelemetry-1.0.1.jar -Dotel.resource.attributes=service.name=${APP_NAME} \${JAVA_OPTS} -Dotel.propagators=b3multi -Dotel.traces.exporter=zipkin  -Dotel.exporter.zipkin.endpoint=http://otel-collector.devopsnow.svc.cluster.local:9411  -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -jar /app/service.jar " > entrypoint.sh
-          echo "nexus.piramalfinance.com:8082/repository/piramal-docker/prf-java:java17
+          java  -javaagent:/app/opentelemetry-1.0.1.jar -Dotel.resource.attributes=service.name=${CODEBASE_DIR} \${JAVA_OPTS} -Dotel.propagators=b3multi -Dotel.traces.exporter=zipkin  -Dotel.exporter.zipkin.endpoint=http://otel-collector.devopsnow.svc.cluster.local:9411  -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -jar /app/service.jar " > entrypoint.sh
+          echo "FROM nexus.piramalfinance.com:8082/repository/piramal-docker/prf-java:java17
                   WORKDIR /app
                   COPY target/*.jar /app/service.jar
                   ADD https://nexus.piramalfinance.com/repository/piramal-releases/com/pchf/opentelemetry/1.24.0/opentelemetry-1.24.0.jar /app
