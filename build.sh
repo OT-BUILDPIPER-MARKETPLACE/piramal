@@ -7,7 +7,7 @@ source /opt/buildpiper/shell-functions/log-functions.sh
 
 # Initialize variables
 CODEBASE_LOCATION="${WORKSPACE}/${CODEBASE_DIR}"
-SLEEP_DURATION=${SLEEP_DURATION:-0}
+sleep $SLEEP_DURATION
 
 
 logInfoMessage "Starting build process for code at ${CODEBASE_LOCATION}"
@@ -84,7 +84,7 @@ if [ $BRANCH = "master" ] || [ $BRANCH = "main" ]
 
         mvn -s settings.xml versions:set -DnewVersion=${POM_RELEASE_VERSION}-$BRANCH
         mvn -s settings.xml clean install
-        mvn -s settings.xml deploy:deploy-file -DgroupId=com.pchf.client -DartifactId=${ARTIFACTID} -Dversion=${BUILD_VERSION} -DpomFile=pom.xml -Dpackaging=jar -DrepositoryId=piramal-snapshots -Durl=https://nexus.piramalfinance.com/repository/piramal-snapshots/ -Dfile=$WORKSPACE/target/${ARTIFACTID}-${BUILD_VERSION}.jar
+        mvn -s settings.xml deploy:deploy-file -DgroupId=com.pchf.client -DartifactId=${ARTIFACTID} -Dversion=${BUILD_VERSION} -DpomFile=pom.xml -Dpackaging=jar -DrepositoryId=piramal-snapshots -Durl=https://nexus.piramalfinance.com/repository/piramal-snapshots/ -Dfile=$CODEBASE_LOCATION/target/${ARTIFACTID}-${BUILD_VERSION}.jar
 
       
 
