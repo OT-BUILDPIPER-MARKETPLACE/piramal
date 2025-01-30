@@ -74,17 +74,17 @@ if [ $BRANCH = "master" ] || [ $BRANCH = "main" ]
             exit 1
         fi
         NEXT_RELEASE_VERSION=`echo ${POM_RELEASE_VERSION}| awk -F'.' '{print $1"."$2"."$3+1}'`
-        mvn versions:set -DnewVersion=${POM_RELEASE_VERSION}-SNAPSHOT
+        mvn -s settings.xml versions:set -DnewVersion=${POM_RELEASE_VERSION}-SNAPSHOT
         echo -e "Release Version=[${POM_RELEASE_VERSION}], Next Release Snapshot Version=[${NEXT_RELEASE_VERSION}]"
-        mvn release:prepare release:perform -Dmaven.javadoc.skip=true -Darguments=-DskipTests -DscmCommentPrefix=[PRFDEVOPSB-4481] -Dtag=v${POM_RELEASE_VERSION} -DcheckModificationExcludeList=pom.xml --batch-mode --fail-at-end || { mvn release:rollback --batch-mode && false; }
+        mvn -s settings.xml release:prepare release:perform -Dmaven.javadoc.skip=true -Darguments=-DskipTests -DscmCommentPrefix=[PRFDEVOPSB-4481] -Dtag=v${POM_RELEASE_VERSION} -DcheckModificationExcludeList=pom.xml --batch-mode --fail-at-end || { mvn release:rollback --batch-mode && false; }
 
     else
 
         BUILD_VERSION=${POM_RELEASE_VERSION}-$BRANCH
 
-        mvn versions:set -DnewVersion=${POM_RELEASE_VERSION}-$BRANCH
-        mvn clean install
-        mvn deploy:deploy-file -DgroupId=com.pchf.client -DartifactId=${ARTIFACTID} -Dversion=${BUILD_VERSION} -DpomFile=pom.xml -Dpackaging=jar -DrepositoryId=piramal-snapshots -Durl=https://nexus.piramalfinance.com/repository/piramal-snapshots/ -Dfile=$WORKSPACE/target/${ARTIFACTID}-${BUILD_VERSION}.jar
+        mvn -s settings.xml versions:set -DnewVersion=${POM_RELEASE_VERSION}-$BRANCH
+        mvn -s settings.xml clean install
+        mvn -s settings.xml deploy:deploy-file -DgroupId=com.pchf.client -DartifactId=${ARTIFACTID} -Dversion=${BUILD_VERSION} -DpomFile=pom.xml -Dpackaging=jar -DrepositoryId=piramal-snapshots -Durl=https://nexus.piramalfinance.com/repository/piramal-snapshots/ -Dfile=$WORKSPACE/target/${ARTIFACTID}-${BUILD_VERSION}.jar
 
       
 
