@@ -9,7 +9,7 @@ ADD BP-BASE-SHELL-STEPS /opt/buildpiper/shell-functions/
 ENV TZ=Asia/Kolkata
 
 # Optional: Install additional tools if needed
-RUN apt-get update && apt-get install -y jq
+RUN apt-get update && apt-get install -y jq ssh
 
 # Environment variable
 ENV ACTIVITY_SUB_TASK_CODE  DEPENDENCY_JAR_CHECK_FOR_MVN
